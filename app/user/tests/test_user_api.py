@@ -12,6 +12,7 @@ CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
 ME_URL = reverse('user:me')
 
+
 def create_user(**params):
     """Create and return a new user."""
     return get_user_model().objects.create_user(**params)
@@ -87,6 +88,14 @@ class PublicUserApiTest(TestCase):
         create_user(email='test@example.com', password='goodpass')
 
         payload = {'email': 'test@example.com', 'password': 'badpass'}
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertNotIn('token', res.data)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_token_email_not_found(self):
+        """Test error returned if user not found for given email."""
+        payload = {'email': 'test@example.com', 'password': 'pass123'}
         res = self.client.post(TOKEN_URL, payload)
 
         self.assertNotIn('token', res.data)
